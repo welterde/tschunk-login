@@ -11,7 +11,7 @@ func ReadString(reader io.Reader) (s string, err os.Error) {
 	if err != nil {
 		return
 	}
-	
+
 	// read that many bytes
 	bs := make([]byte, uint16(length))
 	_, err = io.ReadFull(reader, bs)
@@ -21,13 +21,13 @@ func ReadString(reader io.Reader) (s string, err os.Error) {
 func WriteString(writer io.Writer, s string) (err os.Error) {
 	// convert string to an byte array
 	bs := []byte(s)
-	
+
 	// try to write binary length
 	err = binary.Write(writer, binary.BigEndian, int16(len(bs)))
 	if err != nil {
 		return
 	}
-	
+
 	// now write the string
 	_, err = writer.Write(bs)
 	return
