@@ -27,7 +27,15 @@ func StartClient(conn net.Conn) {
 }
 
 func (client *Client) receiveLoop() {
-
+	for {
+		_, err := packets.ReadPacket(client.conn)
+		if err != nil {
+			// TODO: do something useful here
+			return
+		}
+		
+		// TODO: call handler
+	}
 }
 
 func (client *Client) transmitLoop() {

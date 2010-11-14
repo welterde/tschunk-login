@@ -8,6 +8,10 @@ import "os"
 import . "minecraft/packets/base"
 
 
+const REQ_PID = 0x01
+const RES_PID = 0x01
+
+
 type Request struct {
 	ProtocolVersion int32
 	Username        string

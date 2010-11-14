@@ -6,6 +6,10 @@ import "os"
 import . "minecraft/packets/base"
 
 
+const REQ_PID = 0x02
+const RES_PID = 0x02
+
+
 type Request struct {
 	username string
 }
