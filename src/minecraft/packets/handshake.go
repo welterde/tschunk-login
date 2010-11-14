@@ -14,25 +14,31 @@ func (req *Request) PacketID() (id byte) {
 	return 0x02
 }
 
-type Response struct {
-	hash string
-}
-
-func (resp *Response) PacketID() (id byte) {
-	return 0x02
-}
-
-func Read(reader io.Reader) (packet *Request, err os.Error) {
-	// create structure to return
-	packet = new(Request)
-
+func (packet *Request) Read(reader io.Reader) (err os.Error) {
 	// read string
 	packet.username, err = ReadString(reader)
 
 	return
 }
 
-func Write(writer io.Writer, packet *Response) (err os.Error) {
+func (packet *Request) Write(writer io.Writer) (err os.Error) {
+	return
+}
+
+
+type Response struct {
+	hash string
+}
+
+func (packet *Response) PacketID() (id byte) {
+	return 0x02
+}
+
+func (packet *Response) Read(reader io.Reader) (err os.Error) {
+	return
+}
+
+func (packet *Response) Write(writer io.Writer) (err os.Error) {
 	// write hash
 	err = WriteString(writer, packet.hash)
 
