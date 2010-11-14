@@ -1,12 +1,10 @@
 package server
 
 
-
 import "os"
 import "net"
 
 import client "minecraft/client"
-
 
 
 type Server struct {
@@ -16,7 +14,7 @@ type Server struct {
 func Create(addr string) (server *Server, err os.Error) {
 	// create structure
 	server = new(Server)
-	
+
 	// try to listen on the socket
 	server.listener, err = net.Listen("tcp", addr)
 	return
@@ -30,14 +28,8 @@ func (server *Server) Serve() {
 			// TODO: print it
 			continue
 		}
-		
+
 		// start client
 		client.StartClient(conn)
 	}
 }
-
-
-
-
-
-	

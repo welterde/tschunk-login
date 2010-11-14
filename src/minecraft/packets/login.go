@@ -55,10 +55,6 @@ func (packet *Request) Write(writer io.Writer) (err os.Error) {
 }
 
 
-
-
-
-
 type Response struct {
 	EID       int32
 	MapSeed   int64
@@ -79,25 +75,25 @@ func (packet *Response) Write(writer io.Writer) (err os.Error) {
 	if err != nil {
 		return
 	}
-	
+
 	// unknown
 	err = WriteShort(writer, 0)
 	if err != nil {
 		return
 	}
-	
+
 	// unknown
 	err = WriteShort(writer, 0)
 	if err != nil {
 		return
 	}
-	
+
 	// map seed - used for map generation or something
 	err = WriteLong(writer, packet.MapSeed)
 	if err != nil {
 		return
 	}
-	
+
 	// dimension - 0: normal, -1: hell
 	err = WriteByte(writer, packet.Dimension)
 	return
