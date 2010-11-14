@@ -1,2 +1,2 @@
 #!/bin/sh
-gd -o chunkymonkey
+gd -o tschunk-login
