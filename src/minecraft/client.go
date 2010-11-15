@@ -33,7 +33,7 @@ func (client *Client) receiveLoop() {
 			// TODO: do something useful here
 			return
 		}
-		
+
 		// TODO: call handler
 	}
 }
