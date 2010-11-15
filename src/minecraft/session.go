@@ -21,7 +21,6 @@ func StartSession(conn net.Conn) {
 		conn:     conn,
 		txQueue:  make(chan packets.Packet, 1024),
 		handlers: make(map[byte]Handler),
-		core:     core,
 	}
 
 	// start receive and transmit threads

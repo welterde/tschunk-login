@@ -30,6 +30,6 @@ func (server *Server) Serve() {
 		}
 
 		// start client
-		session.StartSession(server.core, conn)
+		session.StartSession(conn)
 	}
 }

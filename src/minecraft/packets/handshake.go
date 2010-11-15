@@ -11,7 +11,7 @@ const RES_PID = 0x02
 
 
 type Request struct {
-	username string
+	Username string
 }
 
 func (req *Request) PacketID() (id byte) {
@@ -20,7 +20,7 @@ func (req *Request) PacketID() (id byte) {
 
 func (packet *Request) Read(reader io.Reader) (err os.Error) {
 	// read string
-	packet.username, err = ReadString(reader)
+	packet.Username, err = ReadString(reader)
 
 	return
 }
@@ -31,7 +31,7 @@ func (packet *Request) Write(writer io.Writer) (err os.Error) {
 
 
 type Response struct {
-	hash string
+	Hash string
 }
 
 func (packet *Response) PacketID() (id byte) {
@@ -44,7 +44,7 @@ func (packet *Response) Read(reader io.Reader) (err os.Error) {
 
 func (packet *Response) Write(writer io.Writer) (err os.Error) {
 	// write hash
-	err = WriteString(writer, packet.hash)
+	err = WriteString(writer, packet.Hash)
 
 	return
 }
