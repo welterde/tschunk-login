@@ -1,25 +1,23 @@
-package client
+package session
 
 
 import "net"
 import "bytes"
 
-import core    "core"
 import packets "minecraft/packets"
 
 
-type Handler func(client *Client, packet packets.Packet)
+type Handler func(sess *Session, packet packets.Packet)
 
-type Client struct {
+type Session struct {
 	conn     net.Conn
 	txQueue  chan packets.Packet
 	handlers map[byte]Handler
-	core     *core.Core
 }
 
-func StartClient(core *core.Core, conn net.Conn) {
-	// create client instance
-	client := &Client{
+func StartSession(conn net.Conn) {
+	// create session instance
+	sess := &Session{
 		conn:     conn,
 		txQueue:  make(chan packets.Packet, 1024),
 		handlers: make(map[byte]Handler),
@@ -27,43 +25,40 @@ func StartClient(core *core.Core, conn net.Conn) {
 	}
 
 	// start receive and transmit threads
-	go client.receiveLoop()
-	go client.transmitLoop()
+	go sess.receiveLoop()
+	go sess.transmitLoop()
 
-	// register new client with core
-	core.RegisterClient(&client)
-
-	// TODO: add handler for handshake to the map
+	// TODO: register new client with core
 }
 
-func (client *Client) Transmit(packet packets.Packet) {
-	client.txQueue <- packet
+func (sess *Session) Transmit(packet packets.Packet) {
+	sess.txQueue <- packet
 }
 
-func (client *Client) receiveLoop() {
+func (sess *Session) receiveLoop() {
 	for {
-		packet, err := packets.ReadPacket(client.conn)
+		packet, err := packets.ReadPacket(sess.conn)
 		if err != nil {
 			// TODO: do something useful here
 			return
 		}
 
 		// get the handler
-		handler := client.handlers[packet.PacketID()]
+		handler := sess.handlers[packet.PacketID()]
 
 		// try to run handler
 		if handler != nil {
-			handler(client, packet)
+			handler(sess, packet)
 		} else {
 			// TODO: log this
 		}
 	}
 }
 
-func (client *Client) transmitLoop() {
+func (sess *Session) transmitLoop() {
 	for {
 		// get next packet from the queue
-		packet := <-client.txQueue
+		packet := <-sess.txQueue
 
 		// check if the queue still exists
 		if packet == nil {
@@ -77,7 +72,7 @@ func (client *Client) transmitLoop() {
 		packet.Write(buf)
 
 		// now try to send it
-		_, err := client.conn.Write(buf.Bytes())
+		_, err := sess.conn.Write(buf.Bytes())
 		if err != nil {
 			// TODO: fail
 			return
