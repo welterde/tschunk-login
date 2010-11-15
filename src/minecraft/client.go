@@ -4,6 +4,7 @@ package client
 import "net"
 import "bytes"
 
+import core    "core"
 import packets "minecraft/packets"
 
 
@@ -13,21 +14,30 @@ type Client struct {
 	conn     net.Conn
 	txQueue  chan packets.Packet
 	handlers map[byte]Handler
+	core     *core.Core
 }
 
-func StartClient(conn net.Conn) {
+func StartClient(core *core.Core, conn net.Conn) {
 	// create client instance
 	client := &Client{
 		conn:     conn,
 		txQueue:  make(chan packets.Packet, 1024),
 		handlers: make(map[byte]Handler),
+		core:     core,
 	}
 
 	// start receive and transmit threads
 	go client.receiveLoop()
 	go client.transmitLoop()
 
+	// register new client with core
+	core.RegisterClient(&client)
+
 	// TODO: add handler for handshake to the map
+}
+
+func (client *Client) Transmit(packet packets.Packet) {
+	client.txQueue <- packet
 }
 
 func (client *Client) receiveLoop() {
