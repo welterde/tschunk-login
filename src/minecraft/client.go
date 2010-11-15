@@ -7,16 +7,20 @@ import "bytes"
 import packets "minecraft/packets"
 
 
+type Handler func(client *Client, packet packets.Packet)
+
 type Client struct {
-	conn    net.Conn
-	txQueue chan packets.Packet
+	conn     net.Conn
+	txQueue  chan packets.Packet
+	handlers map[byte]Handler
 }
 
 func StartClient(conn net.Conn) {
 	// create client instance
 	client := &Client{
-		conn:    conn,
-		txQueue: make(chan packets.Packet, 1024),
+		conn:     conn,
+		txQueue:  make(chan packets.Packet, 1024),
+		handlers: make(map[byte]Handler),
 	}
 
 	// start receive and transmit threads
@@ -28,13 +32,21 @@ func StartClient(conn net.Conn) {
 
 func (client *Client) receiveLoop() {
 	for {
-		_, err := packets.ReadPacket(client.conn)
+		packet, err := packets.ReadPacket(client.conn)
 		if err != nil {
 			// TODO: do something useful here
 			return
 		}
 
-		// TODO: call handler
+		// get the handler
+		handler := client.handlers[packet.PacketID()]
+
+		// try to run handler
+		if handler != nil {
+			handler(client, packet)
+		} else {
+			// TODO: log this
+		}
 	}
 }
 
