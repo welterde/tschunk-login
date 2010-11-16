@@ -1,0 +1,3 @@
+[submodule "vendor/log4go"]
+	path = vendor/log4go
+	url = git://github.com/welterde/log4go.git
