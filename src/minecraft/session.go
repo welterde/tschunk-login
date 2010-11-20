@@ -6,6 +6,7 @@ import "bytes"
 import log "log4go"
 
 import packets "minecraft/packets"
+import entity  "minecraft/entity"
 
 
 type Handler func(sess *Session, packet packets.Packet)
