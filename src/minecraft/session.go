@@ -3,6 +3,7 @@ package session
 
 import "net"
 import "bytes"
+import log "log4go"
 
 import packets "minecraft/packets"
 
@@ -36,11 +37,13 @@ func (sess *Session) Transmit(packet packets.Packet) {
 
 func (sess *Session) receiveLoop() {
 	for {
+		log.Finest("Waiting for packet..")
 		packet, err := packets.ReadPacket(sess.conn)
 		if err != nil {
-			// TODO: do something useful here
+			log.Error("Failure in receive loop: %v", err)
 			return
 		}
+		log.Fine("got packet %v", packet.PacketID())
 
 		// get the handler
 		handler := sess.handlers[packet.PacketID()]
@@ -49,7 +52,7 @@ func (sess *Session) receiveLoop() {
 		if handler != nil {
 			handler(sess, packet)
 		} else {
-			// TODO: log this
+			log.Info("Missing handler for packet-id: %v", packet.PacketID())
 		}
 	}
 }
@@ -65,6 +68,7 @@ func (sess *Session) transmitLoop() {
 		}
 
 		// TODO: log packet id and some other stuff before sending
+		log.Fine("sending packet %v", packet.PacketID())
 
 		// convert to bytes
 		buf := &bytes.Buffer{}
