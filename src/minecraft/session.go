@@ -12,24 +12,29 @@ import entity  "minecraft/entity"
 type Handler func(sess *Session, packet packets.Packet)
 
 type Session struct {
-	conn     net.Conn
-	txQueue  chan packets.Packet
-	handlers map[byte]Handler
+	conn          net.Conn
+	txQueue       chan packets.Packet
+	daemon        Daemon
+	handlers      map[byte]Handler
+	EntityManager *entity.EntityManager
 }
 
-func StartSession(conn net.Conn) {
+func StartSession(daemon Daemon, conn net.Conn) {
 	// create session instance
 	sess := &Session{
-		conn:     conn,
-		txQueue:  make(chan packets.Packet, 1024),
-		handlers: make(map[byte]Handler),
+		conn:          conn,
+		txQueue:       make(chan packets.Packet, 1024),
+		daemon:        daemon,
+		handlers:      make(map[byte]Handler),
+		EntityManager: entity.NewEntityManager(),
 	}
 
 	// start receive and transmit threads
 	go sess.receiveLoop()
 	go sess.transmitLoop()
 
-	// TODO: register new client with core
+	// register new client with session manager
+	daemon.SessionManager().AddSession(sess)
 }
 
 func (sess *Session) Transmit(packet packets.Packet) {

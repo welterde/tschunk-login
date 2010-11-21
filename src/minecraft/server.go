@@ -6,15 +6,19 @@ import "net"
 import log "log4go"
 
 import session "minecraft/session"
-
+import daemon  "minecraft/daemon"
 
 type Server struct {
 	listener net.Listener
+	daemon   *daemon.Daemon
 }
 
-func Create(addr string) (server *Server, err os.Error) {
+func Create(daemon *daemon.Daemon, addr string) (server *Server, err os.Error) {
 	// create structure
 	server = new(Server)
+
+	// set daemon
+	server.daemon = daemon
 
 	// try to listen on the socket
 	log.Info("Trying to listen on %v", addr)
@@ -35,6 +39,6 @@ func (server *Server) Serve() {
 		log.Info("Got connection from %v on local socket %v", conn.RemoteAddr(), conn.LocalAddr())
 
 		// start client
-		session.StartSession(conn)
+		session.StartSession(server.daemon, conn)
 	}
 }
