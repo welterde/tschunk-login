@@ -3,6 +3,7 @@ package session
 
 import "net"
 import "bytes"
+import log "log4go"
 
 import packets "minecraft/packets"
 
@@ -38,7 +39,7 @@ func (sess *Session) receiveLoop() {
 	for {
 		packet, err := packets.ReadPacket(sess.conn)
 		if err != nil {
-			// TODO: do something useful here
+			log.Warn("Error in receiveLoop: %v", err)
 			return
 		}
 
@@ -49,7 +50,7 @@ func (sess *Session) receiveLoop() {
 		if handler != nil {
 			handler(sess, packet)
 		} else {
-			// TODO: log this
+			log.Error("Handler for %v not found!", packet.PacketID())
 		}
 	}
 }
