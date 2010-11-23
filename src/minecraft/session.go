@@ -37,6 +37,10 @@ func (sess *Session) Transmit(packet packets.Packet) {
 	sess.TXQueue <- packet
 }
 
+func (sess *Session) SetHandler(pid byte, handler Handler) {
+	sess.handlers[pid] = handler
+}
+
 func (sess *Session) handlerLoop() {
 	for {
 		// wait for packet

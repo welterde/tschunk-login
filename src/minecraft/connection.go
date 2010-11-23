@@ -5,8 +5,10 @@ import "net"
 import "bytes"
 import log "log4go"
 
-import packets "minecraft/packets"
-import session "minecraft/session"
+import packets     "minecraft/packets"
+import session     "minecraft/session"
+import handshake   "minecraft/handlers/handshake"
+import handshake_p "minecraft/packets/handshake"
 
 
 type Connection struct {
@@ -17,6 +19,9 @@ type Connection struct {
 func HandleConnection(daemon session.Daemon, conn net.Conn) {
 	// create session instance
 	sess := session.StartSession(daemon)
+
+	// add handshake handler to session
+	sess.SetHandler(handshake_p.REQ_PID, handshake.Handler)
 
 	// create connection instance
 	con := &Connection{
