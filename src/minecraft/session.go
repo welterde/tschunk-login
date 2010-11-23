@@ -6,29 +6,35 @@ import "bytes"
 import log "log4go"
 
 import packets "minecraft/packets"
+import entity  "minecraft/entity"
 
 
 type Handler func(sess *Session, packet packets.Packet)
 
 type Session struct {
-	conn     net.Conn
-	txQueue  chan packets.Packet
-	handlers map[byte]Handler
+	conn          net.Conn
+	txQueue       chan packets.Packet
+	daemon        Daemon
+	handlers      map[byte]Handler
+	EntityManager *entity.EntityManager
 }
 
-func StartSession(conn net.Conn) {
+func StartSession(daemon Daemon, conn net.Conn) {
 	// create session instance
 	sess := &Session{
-		conn:     conn,
-		txQueue:  make(chan packets.Packet, 1024),
-		handlers: make(map[byte]Handler),
+		conn:          conn,
+		txQueue:       make(chan packets.Packet, 1024),
+		daemon:        daemon,
+		handlers:      make(map[byte]Handler),
+		EntityManager: entity.NewEntityManager(),
 	}
 
 	// start receive and transmit threads
 	go sess.receiveLoop()
 	go sess.transmitLoop()
 
-	// TODO: register new client with core
+	// register new client with session manager
+	daemon.SessionManager().AddSession(sess)
 }
 
 func (sess *Session) Transmit(packet packets.Packet) {
@@ -37,11 +43,13 @@ func (sess *Session) Transmit(packet packets.Packet) {
 
 func (sess *Session) receiveLoop() {
 	for {
+		log.Finest("Waiting for packet..")
 		packet, err := packets.ReadPacket(sess.conn)
 		if err != nil {
-			log.Warn("Error in receiveLoop: %v", err)
+			log.Error("Failure in receive loop: %v", err)
 			return
 		}
+		log.Fine("got packet %v", packet.PacketID())
 
 		// get the handler
 		handler := sess.handlers[packet.PacketID()]
@@ -66,6 +74,7 @@ func (sess *Session) transmitLoop() {
 		}
 
 		// TODO: log packet id and some other stuff before sending
+		log.Fine("sending packet %v", packet.PacketID())
 
 		// convert to bytes
 		buf := &bytes.Buffer{}
