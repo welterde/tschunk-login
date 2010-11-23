@@ -1,8 +1,6 @@
 package session
 
 
-import "net"
-import "bytes"
 import log "log4go"
 
 import packets "minecraft/packets"
@@ -12,44 +10,37 @@ import entity  "minecraft/entity"
 type Handler func(sess *Session, packet packets.Packet)
 
 type Session struct {
-	conn          net.Conn
-	txQueue       chan packets.Packet
-	daemon        Daemon
+	RXQueue       chan packets.Packet
+	TXQueue       chan packets.Packet
+	Daemon        Daemon
 	handlers      map[byte]Handler
 	EntityManager *entity.EntityManager
 }
 
-func StartSession(daemon Daemon, conn net.Conn) {
+func StartSession(daemon Daemon) (sess *Session) {
 	// create session instance
-	sess := &Session{
-		conn:          conn,
-		txQueue:       make(chan packets.Packet, 1024),
-		daemon:        daemon,
+	sess = &Session{
+		RXQueue:       make(chan packets.Packet, 50),
+		TXQueue:       make(chan packets.Packet, 1024),
+		Daemon:        daemon,
 		handlers:      make(map[byte]Handler),
 		EntityManager: entity.NewEntityManager(),
 	}
 
-	// start receive and transmit threads
-	go sess.receiveLoop()
-	go sess.transmitLoop()
+	// start handler thread
+	go sess.handlerLoop()
 
-	// register new client with session manager
-	daemon.SessionManager().AddSession(sess)
+	return
 }
 
 func (sess *Session) Transmit(packet packets.Packet) {
-	sess.txQueue <- packet
+	sess.TXQueue <- packet
 }
 
-func (sess *Session) receiveLoop() {
+func (sess *Session) handlerLoop() {
 	for {
-		log.Finest("Waiting for packet..")
-		packet, err := packets.ReadPacket(sess.conn)
-		if err != nil {
-			log.Error("Failure in receive loop: %v", err)
-			return
-		}
-		log.Fine("got packet %v", packet.PacketID())
+		// wait for packet
+		packet := <-sess.RXQueue
 
 		// get the handler
 		handler := sess.handlers[packet.PacketID()]
@@ -59,32 +50,6 @@ func (sess *Session) receiveLoop() {
 			handler(sess, packet)
 		} else {
 			log.Error("Handler for %v not found!", packet.PacketID())
-		}
-	}
-}
-
-func (sess *Session) transmitLoop() {
-	for {
-		// get next packet from the queue
-		packet := <-sess.txQueue
-
-		// check if the queue still exists
-		if packet == nil {
-			return
-		}
-
-		// TODO: log packet id and some other stuff before sending
-		log.Fine("sending packet %v", packet.PacketID())
-
-		// convert to bytes
-		buf := &bytes.Buffer{}
-		packet.Write(buf)
-
-		// now try to send it
-		_, err := sess.conn.Write(buf.Bytes())
-		if err != nil {
-			// TODO: fail
-			return
 		}
 	}
 }

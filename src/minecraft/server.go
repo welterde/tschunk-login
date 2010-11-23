@@ -5,8 +5,8 @@ import "os"
 import "net"
 import log "log4go"
 
-import session "minecraft/session"
-import daemon  "minecraft/daemon"
+import connection "minecraft/connection"
+import daemon     "minecraft/daemon"
 
 type Server struct {
 	listener net.Listener
@@ -39,6 +39,6 @@ func (server *Server) Serve() {
 		log.Info("Got connection from %v on local socket %v", conn.RemoteAddr(), conn.LocalAddr())
 
 		// start client
-		session.StartSession(server.daemon, conn)
+		connection.HandleConnection(server.daemon, conn)
 	}
 }

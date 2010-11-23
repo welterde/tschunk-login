@@ -2,7 +2,6 @@ package daemon
 
 import session "minecraft/session"
 
-
 func NewDaemon() (daemon *Daemon) {
 	daemon = &Daemon{
 		sessionManager: &session.SessionManager{},
