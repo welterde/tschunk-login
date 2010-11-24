@@ -10,6 +10,6 @@ func Handler(session *session.Session, msg packets.Packet) {
 	if ok != true {
 		panic("BUG!!11!!1: failed cast to Request.. something is very messed up!")
 	}
-	
+
 	// TODO: do something now...
 }
