@@ -15,6 +15,12 @@ type Packet interface {
 	Write(writer io.Writer) (err os.Error)
 }
 
+var MC_TABLE [256]func() (packet Packet)
+
+func init() {
+	MC_TABLE[handshake.REQ_PID] = func() Packet { return new(handshake.Request) }
+	MC_TABLE[login.REQ_PID] = func() Packet { return new(login.Request) }
+}
 
 func ReadPacket(reader io.Reader) (packet Packet, err os.Error) {
 	// read packet id
@@ -24,12 +30,7 @@ func ReadPacket(reader io.Reader) (packet Packet, err os.Error) {
 	}
 
 	// get the correct packet
-	switch packetID {
-	case handshake.REQ_PID:
-		packet = new(handshake.Request)
-	case login.REQ_PID:
-		packet = new(login.Request)
-	}
+	packet = MC_TABLE[packetID]()
 
 	// now read the message
 	err = packet.Read(reader)
