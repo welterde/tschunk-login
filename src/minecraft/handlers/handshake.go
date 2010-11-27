@@ -3,6 +3,8 @@ package handshake
 import session "minecraft/session"
 import packets "minecraft/packets"
 import packet  "minecraft/packets/handshake"
+import login   "minecraft/handlers/login"
+import login_p "minecraft/packets/login"
 
 func Handler(session *session.Session, msg packets.Packet) {
 	// try to cast to an Request
@@ -16,6 +18,11 @@ func Handler(session *session.Session, msg packets.Packet) {
 	// yup.. answer handshake now
 	res := new(packet.Response)
 	res.Hash = "-"
+
+	// now add login handler
+	session.SetHandler(login_p.REQ_PID, login.Handler)
+
+	// FIXME: disable handshake?
 
 	session.Transmit(res)
 }
