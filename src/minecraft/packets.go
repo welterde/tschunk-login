@@ -18,6 +18,11 @@ type Packet interface {
 var MC_TABLE [256]func() (packet Packet)
 
 func init() {
+	// set default handler, which returns nil
+	defH := func() Packet { return nil }
+	for i := 0; i < 256; i++ {
+		MC_TABLE[i] = defH
+	}
 	MC_TABLE[handshake.REQ_PID] = func() Packet { return new(handshake.Request) }
 	MC_TABLE[login.REQ_PID] = func() Packet { return new(login.Request) }
 }
@@ -31,6 +36,10 @@ func ReadPacket(reader io.Reader) (packet Packet, err os.Error) {
 
 	// get the correct packet
 	packet = MC_TABLE[packetID]()
+
+	if packet == nil {
+		return nil, os.NewError("Handler not found")
+	}
 
 	// now read the message
 	err = packet.Read(reader)
