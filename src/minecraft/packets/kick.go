@@ -24,6 +24,6 @@ func (msg *Packet) Read(reader io.Reader) (err os.Error) {
 func (msg *Packet) Write(writer io.Writer) (err os.Error) {
 	// write reason(if there is any ;) for the kick
 	err = WriteString(writer, msg.Message)
-	
+
 	return
 }
