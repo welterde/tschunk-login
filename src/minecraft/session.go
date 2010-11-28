@@ -5,7 +5,7 @@ import log "log4go"
 
 import packets "minecraft/packets"
 import entity  "minecraft/entity"
-
+import kick_p  "minecraft/packets/kick"
 
 type Handler func(sess *Session, packet packets.Packet)
 
@@ -56,4 +56,18 @@ func (sess *Session) handlerLoop() {
 			log.Error("Handler for %v not found!", packet.PacketID())
 		}
 	}
+}
+
+func (sess *Session) Kick(msg string) {
+	// TODO: terminate connection and all...
+
+	// create kick packet
+	pack := &kick_p.Packet{
+		Message: msg,
+	}
+
+	// send it..
+	sess.Transmit(pack)
+
+	// TODO: and now terminate the connection and all that..
 }
