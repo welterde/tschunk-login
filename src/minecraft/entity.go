@@ -4,8 +4,8 @@ import "sync"
 
 func NewEntityManager() (manager *EntityManager) {
 	manager = &EntityManager{
-		mapping:  make(map[string]int32),
-		iMapping: make([]int, 128),
+		mapping:  make(map[string]uint32),
+		iMapping: make([]string, 128),
 	}
 
 	return
@@ -13,22 +13,20 @@ func NewEntityManager() (manager *EntityManager) {
 
 
 type EntityManager struct {
-	mapping    map[string]int32
-	iMapping   []int
+	mapping    map[string]uint32
+	iMapping   []string
 	lock       sync.Mutex
-	currentPos int32
+	currentPos uint32
 }
 
-func (m *EntityManager) GetEntityID(uuid string) (eid int32) {
+func (m *EntityManager) GetEntityID(uuid string) (eid uint32) {
 	// lock this manager
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	// search for it..
-	eid, ok = m.mapping[uuid]
-	if ok == nil {
-		return eid
-	} else {
+	eid, ok := m.mapping[uuid]
+	if !ok {
 		// increment entity id by one
 		m.currentPos++
 
@@ -38,13 +36,16 @@ func (m *EntityManager) GetEntityID(uuid string) (eid int32) {
 		// reverse mapping
 		m.fixIMapping()
 		m.iMapping[m.currentPos] = uuid
+
+		eid = m.currentPos
 	}
+	return
 }
 
 
 func (m *EntityManager) fixIMapping() {
-	if m.currentPos >= cap(m.iMapping) {
-		newIM := make([]int, cap(m.iMapping)*2)
+	if m.currentPos >= uint32(cap(m.iMapping)) {
+		newIM := make([]string, cap(m.iMapping)*2)
 		copy(newIM, m.iMapping)
 		m.iMapping = newIM
 	}
