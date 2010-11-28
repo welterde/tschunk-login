@@ -25,7 +25,9 @@ func Handler(session *session.Session, msg packets.Packet) {
 	// check username... range is 1..42
 	if len(req.Username) < 1 || len(req.Username) > 42 {
 		// invalid username
-		// TODO: do something useful here?
+		// kick user
+		session.Kick("Invalid username! Name too short/long!")
+		// TODO: do something more useful here?
 	}
 
 	// TODO: make sure that the username doesn't contain invalid characters
